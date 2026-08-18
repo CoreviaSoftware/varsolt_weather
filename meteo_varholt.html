@@ -7,9 +7,10 @@
 <style>
 html, body {
     margin: 0;
+    padding: 0;
     width: 100%;
     height: 100%;
-    background: transparent;
+    background: #000000;
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
 }
@@ -18,10 +19,14 @@ html, body {
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    background: #101419;
-    border-radius: 8px;
+    background: #000000;
+
+    /* Fără card / fără colțuri */
+    border: none;
+    border-radius: 0;
+
     padding: 14px 16px;
-    color: #fff;
+    color: #ffffff;
     position: relative;
 }
 
@@ -29,196 +34,376 @@ html, body {
     font-size: 11px;
     letter-spacing: 1.6px;
     color: #8d98a3;
+
+    border-bottom: 1px solid #252c33;
     padding-bottom: 8px;
 }
 
 .location {
-    color: #fff;
+    color: #ffffff;
     font-weight: bold;
 }
 
 .temperature {
     margin-top: 12px;
+
     font-size: 52px;
     line-height: 52px;
     font-weight: bold;
     letter-spacing: -2px;
+
+    color: #ffffff;
 }
 
 .degree {
     font-size: 22px;
     vertical-align: top;
+
     margin-left: 2px;
+
     color: #a7b0b8;
 }
 
 .condition {
     font-size: 15px;
     color: #d0d5da;
+
     margin-top: 5px;
 }
 
 .details {
+    border-top: 1px solid #252c33;
+
     margin-top: 12px;
     padding-top: 9px;
+
     font-size: 11px;
     color: #8d98a3;
+
+    line-height: 20px;
 }
 
 .value {
     color: #e5e8eb;
     font-size: 13px;
+
     margin-right: 10px;
 }
 
 .updated {
     position: absolute;
+
     bottom: 7px;
     right: 10px;
+
     font-size: 9px;
     color: #59636c;
 }
 
 .error {
     padding-top: 18px;
-    color: #aaa;
+
+    color: #aaaaaa;
     font-size: 12px;
 }
 </style>
 </head>
 
+
 <body>
 
 <div class="widget" id="widget">
+
     <div class="header">
         <span class="location">VÂRȘOLȚ</span> · METEO
     </div>
 
-    <div class="error">Se încarcă...</div>
+    <div class="error">
+        Se încarcă...
+    </div>
+
 </div>
+
 
 <script>
 
 function description(code) {
-    if (code === 0) return "Cer senin";
-    if (code === 1) return "Predominant senin";
-    if (code === 2) return "Parțial noros";
-    if (code === 3) return "Noros";
 
-    if (code === 45 || code === 48) return "Ceață";
+    if (code === 0)
+        return "Cer senin";
 
-    if (code >= 51 && code <= 55) return "Burniță";
+    if (code === 1)
+        return "Predominant senin";
 
-    if (code >= 61 && code <= 65) return "Ploaie";
+    if (code === 2)
+        return "Parțial noros";
 
-    if (code >= 71 && code <= 77) return "Ninsoare";
+    if (code === 3)
+        return "Noros";
 
-    if (code >= 80 && code <= 82) return "Averse";
 
-    if (code >= 95) return "Furtună";
+    if (code === 45 || code === 48)
+        return "Ceață";
+
+
+    if (code >= 51 && code <= 55)
+        return "Burniță";
+
+
+    if (code >= 61 && code <= 65)
+        return "Ploaie";
+
+
+    if (code >= 71 && code <= 77)
+        return "Ninsoare";
+
+
+    if (code >= 80 && code <= 82)
+        return "Averse";
+
+
+    if (code >= 95)
+        return "Furtună";
+
 
     return "Vreme variabilă";
 }
 
-function r(value) {
+
+function roundTemperature(value) {
     return Math.round(value);
 }
 
+
 function timeNow() {
-    var d = new Date();
-    var h = d.getHours();
-    var m = d.getMinutes();
 
-    if (h < 10) h = "0" + h;
-    if (m < 10) m = "0" + m;
+    var date = new Date();
 
-    return h + ":" + m;
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+
+
+    if (hours < 10)
+        hours = "0" + hours;
+
+
+    if (minutes < 10)
+        minutes = "0" + minutes;
+
+
+    return hours + ":" + minutes;
 }
+
 
 function render(data) {
 
-    var c = data.current;
-    var d = data.daily;
+    var current = data.current;
+    var daily = data.daily;
+
+
+    var temperature =
+        roundTemperature(current.temperature_2m);
+
+
+    var minTemperature =
+        roundTemperature(
+            daily.temperature_2m_min[0]
+        );
+
+
+    var maxTemperature =
+        roundTemperature(
+            daily.temperature_2m_max[0]
+        );
+
+
+    var wind =
+        roundTemperature(
+            current.wind_speed_10m
+        );
+
 
     document.getElementById("widget").innerHTML =
+
         '<div class="header">' +
-            '<span class="location">VÂRȘOLȚ</span> · METEO' +
+
+            '<span class="location">' +
+                'VÂRȘOLȚ' +
+            '</span>' +
+
+            ' · METEO' +
+
         '</div>' +
+
 
         '<div class="temperature">' +
-            r(c.temperature_2m) +
-            '<span class="degree">°C</span>' +
+
+            temperature +
+
+            '<span class="degree">' +
+                '°C' +
+            '</span>' +
+
         '</div>' +
+
 
         '<div class="condition">' +
-            description(c.weather_code) +
+
+            description(
+                current.weather_code
+            ) +
+
         '</div>' +
+
 
         '<div class="details">' +
-            'MIN <span class="value">' +
-            r(d.temperature_2m_min[0]) +
-            '°</span>' +
 
-            'MAX <span class="value">' +
-            r(d.temperature_2m_max[0]) +
-            '°</span><br>' +
+            'MIN ' +
 
-            'VÂNT <span class="value">' +
-            r(c.wind_speed_10m) +
-            ' km/h</span>' +
+            '<span class="value">' +
+                minTemperature +
+                '°' +
+            '</span>' +
+
+
+            'MAX ' +
+
+            '<span class="value">' +
+                maxTemperature +
+                '°' +
+            '</span>' +
+
+
+            '<br>' +
+
+
+            'VÂNT ' +
+
+            '<span class="value">' +
+                wind +
+                ' km/h' +
+            '</span>' +
+
         '</div>' +
 
+
         '<div class="updated">' +
+
+            'Actualizat ' +
             timeNow() +
+
         '</div>';
 }
+
 
 function loadWeather() {
 
     var url =
+
         "https://api.open-meteo.com/v1/forecast" +
+
         "?latitude=47.20" +
+
         "&longitude=22.9333" +
-        "&current=temperature_2m,weather_code,wind_speed_10m" +
-        "&daily=temperature_2m_max,temperature_2m_min" +
+
+        "&current=" +
+        "temperature_2m," +
+        "weather_code," +
+        "wind_speed_10m" +
+
+        "&daily=" +
+        "temperature_2m_max," +
+        "temperature_2m_min" +
+
         "&timezone=Europe%2FBucharest" +
+
         "&forecast_days=1";
 
-    var xhr = new XMLHttpRequest();
 
-    xhr.onreadystatechange = function() {
+    var xhr =
+        new XMLHttpRequest();
 
-        if (xhr.readyState === 4) {
 
-            if (xhr.status >= 200 && xhr.status < 300) {
+    xhr.onreadystatechange =
+        function() {
 
-                try {
-                    render(JSON.parse(xhr.responseText));
-                } catch(e) {
-                    error();
+            if (xhr.readyState === 4) {
+
+                if (
+                    xhr.status >= 200 &&
+                    xhr.status < 300
+                ) {
+
+                    try {
+
+                        var data =
+                            JSON.parse(
+                                xhr.responseText
+                            );
+
+
+                        render(data);
+
+                    }
+                    catch (e) {
+
+                        showError();
+
+                    }
+
+                }
+                else {
+
+                    showError();
+
                 }
 
-            } else {
-                error();
             }
-        }
-    };
 
-    xhr.open("GET", url, true);
+        };
+
+
+    xhr.open(
+        "GET",
+        url,
+        true
+    );
+
+
     xhr.send();
 }
 
-function error() {
+
+function showError() {
+
     document.getElementById("widget").innerHTML =
+
         '<div class="header">' +
-        '<span class="location">VÂRȘOLȚ</span> · METEO' +
+
+            '<span class="location">' +
+                'VÂRȘOLȚ' +
+            '</span>' +
+
+            ' · METEO' +
+
         '</div>' +
-        '<div class="error">Vreme indisponibilă</div>';
+
+
+        '<div class="error">' +
+            'Vreme indisponibilă' +
+        '</div>';
 }
 
+
+/* Prima încărcare */
 loadWeather();
 
-setInterval(loadWeather, 600000);
+
+/* Actualizare la fiecare 10 minute */
+setInterval(
+    loadWeather,
+    600000
+);
 
 </script>
 
