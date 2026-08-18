@@ -1,1 +1,3 @@
-# meteo_varsolt
+# varsolt_weather
+
+Weather widget for Vârșolț.
