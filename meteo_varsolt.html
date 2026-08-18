@@ -13,6 +13,7 @@ html, body {
     background: #000000;
     font-family: Arial, Helvetica, sans-serif;
     overflow: hidden;
+    color: #ffffff;
 }
 
 .widget {
@@ -20,23 +21,67 @@ html, body {
     width: 100%;
     height: 100%;
     background: #000000;
-
-    /* Fără card / fără colțuri */
     border: none;
     border-radius: 0;
-
-    padding: 14px 16px;
-    color: #ffffff;
+    padding: 18px 22px;
     position: relative;
 }
 
-.header {
-    font-size: 11px;
-    letter-spacing: 1.6px;
-    color: #8d98a3;
 
-    border-bottom: 1px solid #252c33;
-    padding-bottom: 8px;
+/* ================================
+   STÂNGA - ORĂ + DATĂ
+================================ */
+
+.clock-section {
+    position: absolute;
+    left: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 38%;
+}
+
+.time {
+    font-size: 54px;
+    line-height: 54px;
+    font-weight: 600;
+    letter-spacing: -2px;
+    color: #ffffff;
+}
+
+.seconds {
+    font-size: 20px;
+    font-weight: normal;
+    letter-spacing: 0;
+    color: #7f8a94;
+    margin-left: 5px;
+}
+
+.date {
+    margin-top: 10px;
+    font-size: 12px;
+    letter-spacing: 1.4px;
+    color: #8d98a3;
+}
+
+
+/* ================================
+   DREAPTA - VREME
+================================ */
+
+.weather-section {
+    position: absolute;
+    right: 22px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 55%;
+    text-align: right;
+}
+
+.weather-header {
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: #8d98a3;
+    margin-bottom: 8px;
 }
 
 .location {
@@ -44,88 +89,222 @@ html, body {
     font-weight: bold;
 }
 
-.temperature {
-    margin-top: 12px;
+.weather-main {
+    white-space: nowrap;
+}
 
+.temperature {
+    display: inline-block;
     font-size: 52px;
     line-height: 52px;
-    font-weight: bold;
+    font-weight: 600;
     letter-spacing: -2px;
-
     color: #ffffff;
+    vertical-align: middle;
 }
 
 .degree {
-    font-size: 22px;
+    font-size: 20px;
     vertical-align: top;
-
+    position: relative;
+    top: 4px;
     margin-left: 2px;
-
     color: #a7b0b8;
+    letter-spacing: 0;
 }
 
 .condition {
-    font-size: 15px;
+    display: inline-block;
+    margin-left: 18px;
+    font-size: 16px;
     color: #d0d5da;
-
-    margin-top: 5px;
+    vertical-align: middle;
 }
 
 .details {
-    border-top: 1px solid #252c33;
-
-    margin-top: 12px;
-    padding-top: 9px;
-
+    margin-top: 11px;
     font-size: 11px;
-    color: #8d98a3;
-
-    line-height: 20px;
+    letter-spacing: 0.4px;
+    color: #7f8a94;
 }
 
-.value {
+.detail-value {
     color: #e5e8eb;
     font-size: 13px;
-
-    margin-right: 10px;
+    margin-left: 4px;
+    margin-right: 15px;
 }
 
-.updated {
-    position: absolute;
+.detail-value:last-child {
+    margin-right: 0;
+}
 
-    bottom: 7px;
-    right: 10px;
-
+.weather-update {
+    margin-top: 8px;
     font-size: 9px;
-    color: #59636c;
+    color: #4f5962;
 }
+
+
+/* ================================
+   LINIE SEPARATOARE
+================================ */
+
+.separator {
+    position: absolute;
+    left: 41%;
+    top: 22%;
+    height: 56%;
+    width: 1px;
+    background: #20272d;
+}
+
+
+/* ================================
+   ERROR
+================================ */
 
 .error {
-    padding-top: 18px;
-
-    color: #aaaaaa;
     font-size: 12px;
+    color: #8d98a3;
 }
 </style>
 </head>
 
-
 <body>
 
-<div class="widget" id="widget">
+<div class="widget">
 
-    <div class="header">
-        <span class="location">VÂRȘOLȚ</span> · METEO
+    <!-- ORĂ -->
+    <div class="clock-section">
+        <div class="time">
+            <span id="clock">--:--</span>
+            <span class="seconds" id="seconds">--</span>
+        </div>
+
+        <div class="date" id="date">
+            -- · -- -- ----
+        </div>
     </div>
 
-    <div class="error">
-        Se încarcă...
+
+    <div class="separator"></div>
+
+
+    <!-- VREME -->
+    <div class="weather-section">
+
+        <div class="weather-header">
+            <span class="location">VÂRȘOLȚ</span> · METEO
+        </div>
+
+        <div id="weather">
+            <div class="error">
+                Se actualizează vremea...
+            </div>
+        </div>
+
     </div>
 
 </div>
 
 
 <script>
+
+/* =========================================================
+   CEAS
+========================================================= */
+
+var days = [
+    "DUMINICĂ",
+    "LUNI",
+    "MARȚI",
+    "MIERCURI",
+    "JOI",
+    "VINERI",
+    "SÂMBĂTĂ"
+];
+
+var months = [
+    "IAN",
+    "FEB",
+    "MAR",
+    "APR",
+    "MAI",
+    "IUN",
+    "IUL",
+    "AUG",
+    "SEP",
+    "OCT",
+    "NOV",
+    "DEC"
+];
+
+
+function pad(value) {
+
+    if (value < 10)
+        return "0" + value;
+
+    return value;
+}
+
+
+function updateClock() {
+
+    var now = new Date();
+
+    var hours =
+        pad(now.getHours());
+
+    var minutes =
+        pad(now.getMinutes());
+
+    var seconds =
+        pad(now.getSeconds());
+
+
+    document.getElementById("clock").innerHTML =
+        hours + ":" + minutes;
+
+
+    document.getElementById("seconds").innerHTML =
+        seconds;
+
+
+    document.getElementById("date").innerHTML =
+
+        days[now.getDay()] +
+
+        " · " +
+
+        pad(now.getDate()) +
+
+        " " +
+
+        months[now.getMonth()] +
+
+        " " +
+
+        now.getFullYear();
+}
+
+
+/* update instant */
+updateClock();
+
+
+/* update în fiecare secundă */
+setInterval(
+    updateClock,
+    1000
+);
+
+
+
+/* =========================================================
+   METEO
+========================================================= */
 
 function description(code) {
 
@@ -170,116 +349,105 @@ function description(code) {
 }
 
 
-function roundTemperature(value) {
+function roundValue(value) {
+
     return Math.round(value);
 }
 
 
-function timeNow() {
+function weatherUpdateTime() {
 
-    var date = new Date();
+    var date =
+        new Date();
 
-    var hours = date.getHours();
-    var minutes = date.getMinutes();
-
-
-    if (hours < 10)
-        hours = "0" + hours;
-
-
-    if (minutes < 10)
-        minutes = "0" + minutes;
-
-
-    return hours + ":" + minutes;
+    return (
+        pad(date.getHours()) +
+        ":" +
+        pad(date.getMinutes())
+    );
 }
 
 
-function render(data) {
+function renderWeather(data) {
 
-    var current = data.current;
-    var daily = data.daily;
+    var current =
+        data.current;
+
+    var daily =
+        data.daily;
 
 
     var temperature =
-        roundTemperature(current.temperature_2m);
+        roundValue(
+            current.temperature_2m
+        );
 
 
     var minTemperature =
-        roundTemperature(
+        roundValue(
             daily.temperature_2m_min[0]
         );
 
 
     var maxTemperature =
-        roundTemperature(
+        roundValue(
             daily.temperature_2m_max[0]
         );
 
 
     var wind =
-        roundTemperature(
+        roundValue(
             current.wind_speed_10m
         );
 
 
-    document.getElementById("widget").innerHTML =
+    document.getElementById("weather").innerHTML =
 
-        '<div class="header">' +
+        '<div class="weather-main">' +
 
-            '<span class="location">' +
-                'VÂRȘOLȚ' +
+            '<span class="temperature">' +
+
+                temperature +
+
+                '<span class="degree">' +
+                    '°C' +
+                '</span>' +
+
             '</span>' +
 
-            ' · METEO' +
 
-        '</div>' +
+            '<span class="condition">' +
 
+                description(
+                    current.weather_code
+                ) +
 
-        '<div class="temperature">' +
-
-            temperature +
-
-            '<span class="degree">' +
-                '°C' +
             '</span>' +
-
-        '</div>' +
-
-
-        '<div class="condition">' +
-
-            description(
-                current.weather_code
-            ) +
 
         '</div>' +
 
 
         '<div class="details">' +
 
-            'MIN ' +
+            'MIN' +
 
-            '<span class="value">' +
+            '<span class="detail-value">' +
                 minTemperature +
                 '°' +
             '</span>' +
 
 
-            'MAX ' +
+            'MAX' +
 
-            '<span class="value">' +
+            '<span class="detail-value">' +
                 maxTemperature +
                 '°' +
             '</span>' +
 
 
-            '<br>' +
+            'VÂNT' +
 
-
-            'VÂNT ' +
-
-            '<span class="value">' +
+            '<span class="detail-value">' +
                 wind +
                 ' km/h' +
             '</span>' +
@@ -287,13 +455,14 @@ function render(data) {
         '</div>' +
 
 
-        '<div class="updated">' +
+        '<div class="weather-update">' +
 
-            'Actualizat ' +
-            timeNow() +
+            'METEO ACTUALIZAT ' +
+            weatherUpdateTime() +
 
         '</div>';
 }
+
 
 
 function loadWeather() {
@@ -342,19 +511,19 @@ function loadWeather() {
                             );
 
 
-                        render(data);
+                        renderWeather(data);
 
                     }
                     catch (e) {
 
-                        showError();
+                        showWeatherError();
 
                     }
 
                 }
                 else {
 
-                    showError();
+                    showWeatherError();
 
                 }
 
@@ -374,32 +543,23 @@ function loadWeather() {
 }
 
 
-function showError() {
 
-    document.getElementById("widget").innerHTML =
+function showWeatherError() {
 
-        '<div class="header">' +
-
-            '<span class="location">' +
-                'VÂRȘOLȚ' +
-            '</span>' +
-
-            ' · METEO' +
-
-        '</div>' +
-
+    document.getElementById("weather").innerHTML =
 
         '<div class="error">' +
-            'Vreme indisponibilă' +
+            'Vreme indisponibilă momentan' +
         '</div>';
 }
 
 
-/* Prima încărcare */
+
+/* prima încărcare */
 loadWeather();
 
 
-/* Actualizare la fiecare 10 minute */
+/* refresh meteo la fiecare 10 minute */
 setInterval(
     loadWeather,
     600000
